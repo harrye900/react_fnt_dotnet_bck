@@ -30,21 +30,20 @@ jobs:
     - name: Build ${{ matrix.service.name }}
       run: dotnet build backend/${{ matrix.service.name }}/${{ matrix.service.name }}.csproj
     
-    # Uncomment below to enable Docker Hub publishing
-    # - name: Login to Docker Hub
-    #   if: github.ref == 'refs/heads/main'
-    #   uses: docker/login-action@v3
-    #   with:
-    #     username: ${{ secrets.DOCKER_USERNAME }}
-    #     password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Login to Docker Hub
+      if: github.ref == 'refs/heads/main'
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
     
-    - name: Build Docker Image
+    - name: Build and Push Docker Image
       run: |
         # Build Docker image locally
         docker build -t ${{ matrix.service.image }} ./backend/${{ matrix.service.name }}
         
-        # Uncomment below to push to Docker Hub
-        # if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-        #   docker tag ${{ matrix.service.image }} ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service.image }}:latest
-        #   docker push ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service.image }}:latest
-        # fi
+        # Push to Docker Hub on main branch
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          docker tag ${{ matrix.service.image }} ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service.image }}:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service.image }}:latest
+        fi
