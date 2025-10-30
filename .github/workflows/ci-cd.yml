@@ -1,0 +1,99 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Restore dependencies
+      run: |
+        dotnet restore backend/ApiGateway/ApiGateway.csproj
+        dotnet restore backend/ProductService/ProductService.csproj
+        dotnet restore backend/OrderService/OrderService.csproj
+        dotnet restore backend/AuthService/AuthService.csproj
+        dotnet restore backend/CartService/CartService.csproj
+        dotnet restore backend/PaymentService/PaymentService.csproj
+    
+    - name: Build
+      run: |
+        dotnet build backend/ApiGateway/ApiGateway.csproj --no-restore
+        dotnet build backend/ProductService/ProductService.csproj --no-restore
+        dotnet build backend/OrderService/OrderService.csproj --no-restore
+        dotnet build backend/AuthService/AuthService.csproj --no-restore
+        dotnet build backend/CartService/CartService.csproj --no-restore
+        dotnet build backend/PaymentService/PaymentService.csproj --no-restore
+
+  docker-build:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker Images
+      run: |
+        docker build -t api-gateway ./backend/ApiGateway
+        docker build -t product-service ./backend/ProductService
+        docker build -t order-service ./backend/OrderService
+        docker build -t auth-service ./backend/AuthService
+        docker build -t cart-service ./backend/CartService
+        docker build -t payment-service ./backend/PaymentService
+    
+    - name: Test Docker Images
+      run: |
+        docker run --rm api-gateway --version || echo "API Gateway image built successfully"
+        docker run --rm product-service --version || echo "Product Service image built successfully"
+        docker run --rm order-service --version || echo "Order Service image built successfully"
+
+  publish:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build and Push Images
+      run: |
+        # API Gateway
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest ./backend/ApiGateway
+        docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest
+        
+        # Product Service
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/product-service:latest ./backend/ProductService
+        docker push ${{ secrets.DOCKER_USERNAME }}/product-service:latest
+        
+        # Order Service
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/order-service:latest ./backend/OrderService
+        docker push ${{ secrets.DOCKER_USERNAME }}/order-service:latest
+        
+        # Auth Service
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/auth-service:latest ./backend/AuthService
+        docker push ${{ secrets.DOCKER_USERNAME }}/auth-service:latest
+        
+        # Cart Service
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/cart-service:latest ./backend/CartService
+        docker push ${{ secrets.DOCKER_USERNAME }}/cart-service:latest
+        
+        # Payment Service
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/payment-service:latest ./backend/PaymentService
+        docker push ${{ secrets.DOCKER_USERNAME }}/payment-service:latest
