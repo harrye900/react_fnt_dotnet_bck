@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechHub - Checkout Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: #333;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background: white;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        .total {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: right;
+            margin: 20px 0;
+            color: #667eea;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">🚀 TechHub - Checkout Demo</div>
+            <div class="user-info">Welcome, user@test.com</div>
+        </header>
+
+        <!-- Step 1: Login -->
+        <section class="section">
+            <h2 class="section-title">Step 1: Authentication</h2>
+            <div class="step">
+                <strong>🔐 Auth Service:</strong> Validates user credentials
+                <br><button class="btn btn-primary" onclick="testLogin()">Test Login</button>
+            </div>
+        </section>
+
+        <!-- Step 2: Products -->
+        <section class="section">
+            <h2 class="section-title">Step 2: Browse Products</h2>
+            <div class="step">
+                <strong>📦 Product Service:</strong> Loads available products
+                <br><button class="btn btn-primary" onclick="loadProducts()">Load Products</button>
+            </div>
+            <div id="productsDisplay"></div>
+        </section>
+
+        <!-- Step 3: Cart -->
+        <section class="section">
+            <h2 class="section-title">Step 3: Shopping Cart</h2>
+            <div class="step">
+                <strong>🛒 Cart Service:</strong> Manages cart items
+                <br><button class="btn btn-primary" onclick="addToCart()">Add Laptop to Cart</button>
+                <button class="btn btn-primary" onclick="viewCart()">View Cart</button>
+            </div>
+            <div id="cartDisplay"></div>
+        </section>
+
+        <!-- Step 4: Checkout -->
+        <section class="section">
+            <h2 class="section-title">Step 4: Checkout Process</h2>
+            <div class="step">
+                <strong>💳 Payment Service:</strong> Processes payment
+                <br><strong>📋 Order Service:</strong> Creates order (calls Payment Service)
+                <br><button class="btn btn-success" onclick="checkout()">Complete Checkout</button>
+            </div>
+        </section>
+
+        <div id="statusMessage"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api/gateway';
+        let currentUser = { userId: 1, email: 'user@test.com' };
+        let cart = [];
+
+        async function testLogin() {
+            showMessage('🔐 Testing Auth Service...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: 'user@test.com', 
+                        password: 'password' 
+                    })
+                });
+
+                if (response.ok) {
+                    showMessage('✅ Auth Service: Login successful!', 'success');
+                } else {
+                    showMessage('❌ Auth Service failed', 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Auth Service unavailable', 'error');
+            }
+        }
+
+        async function loadProducts() {
+            showMessage('📦 Loading from Product Service...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/products`);
+                const data = await response.text();
+                const products = JSON.parse(data);
+                
+                document.getElementById('productsDisplay').innerHTML = `
+                    <div style="margin-top: 15px;">
+                        ${products.map(p => `
+                            <div class="cart-item">
+                                <div><strong>${p.name}</strong> - $${p.price}</div>
+                                <div>Stock: ${p.stock}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                showMessage('✅ Product Service: Products loaded!', 'success');
+            } catch (error) {
+                showMessage('❌ Product Service unavailable', 'error');
+            }
+        }
+
+        async function addToCart() {
+            showMessage('🛒 Adding to Cart Service...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.userId,
+                        productId: 1,
+                        quantity: 1,
+                        price: 999.99
+                    })
+                });
+
+                if (response.ok) {
+                    cart.push({ name: 'Laptop', price: 999.99, quantity: 1 });
+                    showMessage('✅ Cart Service: Laptop added to cart!', 'success');
+                } else {
+                    showMessage('❌ Cart Service failed', 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Cart Service unavailable', 'error');
+            }
+        }
+
+        function viewCart() {
+            if (cart.length === 0) {
+                document.getElementById('cartDisplay').innerHTML = '<p>Cart is empty</p>';
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            document.getElementById('cartDisplay').innerHTML = `
+                <div style="margin-top: 15px;">
+                    ${cart.map(item => `
+                        <div class="cart-item">
+                            <div><strong>${item.name}</strong></div>
+                            <div>$${item.price} x ${item.quantity}</div>
+                        </div>
+                    `).join('')}
+                    <div class="total">Total: $${total.toFixed(2)}</div>
+                </div>
+            `;
+        }
+
+        async function checkout() {
+            if (cart.length === 0) {
+                showMessage('❌ Cart is empty!', 'error');
+                return;
+            }
+
+            showMessage('💳 Processing checkout through Order Service...', 'loading');
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            try {
+                const orderData = {
+                    userId: currentUser.userId,
+                    items: cart.map(item => ({
+                        productId: 1,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    total: total,
+                    paymentDetails: {
+                        amount: total,
+                        cardNumber: '1234567890123456',
+                        expiryDate: '12/25',
+                        cvv: '123',
+                        userId: currentUser.userId
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/orders/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (response.ok) {
+                    showMessage('🎉 SUCCESS! Order Service → Payment Service → Order Created!', 'success');
+                    cart = [];
+                    document.getElementById('cartDisplay').innerHTML = '<p>Order completed! Cart cleared.</p>';
+                } else {
+                    showMessage('❌ Checkout failed', 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Order/Payment services unavailable', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+            if (type !== 'loading') {
+                setTimeout(() => statusDiv.innerHTML = '', 4000);
+            }
+        }
+    </script>
+</body>
+</html>

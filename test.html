@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microservices Test</title>
+</head>
+<body>
+    <h1>Microservices E-Commerce</h1>
+    <button onclick="testProducts()">Test Products</button>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testAddToCart()">Add to Cart</button>
+    <button onclick="testCheckout()">Checkout</button>
+    <button onclick="viewDatabase()">View Database</button>
+    
+    <h3>Add Custom Product:</h3>
+    <input type="text" id="productName" placeholder="Product Name">
+    <input type="number" id="productPrice" placeholder="Price" step="0.01">
+    <input type="number" id="productStock" placeholder="Stock">
+    <button onclick="addProduct()">Add Product</button>
+    
+    <h3>Create Custom Order:</h3>
+    <input type="number" id="orderUserId" placeholder="User ID" value="1">
+    <input type="text" id="orderProductId" placeholder="Product ID">
+    <input type="number" id="orderQuantity" placeholder="Quantity" value="1">
+    <input type="number" id="orderPrice" placeholder="Price" step="0.01">
+    <button onclick="createOrder()">Create Order</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testProducts() {
+            try {
+                const response = await fetch('http://localhost:5000/api/gateway/products');
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const response = await fetch('http://localhost:5000/api/gateway/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'user@test.com', password: 'password' })
+                });
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+
+        async function testAddToCart() {
+            try {
+                const response = await fetch('http://localhost:5000/api/gateway/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        userId: 1, 
+                        productId: 1, 
+                        quantity: 2, 
+                        price: 29.99 
+                    })
+                });
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+
+        async function testCheckout() {
+            try {
+                const response = await fetch('http://localhost:5000/api/gateway/orders/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: 1,
+                        items: [{ productId: 1, quantity: 2, price: 29.99 }],
+                        total: 59.98,
+                        paymentDetails: { cardNumber: '1234-5678-9012-3456', amount: 59.98 }
+                    })
+                });
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+
+        async function viewDatabase() {
+            try {
+                const productsRes = await fetch('http://localhost:5000/api/gateway/products');
+                const productsText = await productsRes.text();
+                
+                let products, orders = 'No orders yet';
+                try {
+                    products = JSON.parse(productsText);
+                } catch {
+                    products = productsText;
+                }
+                
+                try {
+                    const ordersRes = await fetch('http://localhost:5000/api/gateway/orders/1');
+                    const ordersText = await ordersRes.text();
+                    orders = JSON.parse(ordersText);
+                } catch {
+                    orders = 'No orders found';
+                }
+                
+                document.getElementById('result').innerHTML = 
+                    '<h3>Products Collection:</h3><pre>' + JSON.stringify(products, null, 2) + '</pre>' +
+                    '<h3>Orders Collection:</h3><pre>' + JSON.stringify(orders, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('productName').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+            
+            if (!name || !price || !stock) {
+                alert('Please fill all product fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/gateway/products/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, price, stock })
+                });
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+                
+                // Clear form
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productStock').value = '';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+
+        async function createOrder() {
+            const userId = parseInt(document.getElementById('orderUserId').value);
+            const productId = document.getElementById('orderProductId').value;
+            const quantity = parseInt(document.getElementById('orderQuantity').value);
+            const price = parseFloat(document.getElementById('orderPrice').value);
+            
+            if (!userId || !productId || !quantity || !price) {
+                alert('Please fill all order fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/gateway/orders/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId,
+                        items: [{ productId, quantity, price }],
+                        total: quantity * price,
+                        paymentDetails: { cardNumber: '1234-5678-9012-3456', amount: quantity * price }
+                    })
+                });
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<pre>' + data + '</pre>';
+                
+                // Clear form
+                document.getElementById('orderProductId').value = '';
+                document.getElementById('orderQuantity').value = '1';
+                document.getElementById('orderPrice').value = '';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+    </script>
+</body>
+</html>

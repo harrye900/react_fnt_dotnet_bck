@@ -1,0 +1,90 @@
+{
+  "version": 3,
+  "targets": {
+    "net8.0": {}
+  },
+  "libraries": {},
+  "projectFileDependencyGroups": {
+    "net8.0": [
+      "MongoDB.Driver >= 2.22.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\HARRY\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\HARRY\\racetrac\\react_fnt_dotnet_bck\\backend\\ProductService\\ProductService.csproj",
+      "projectName": "ProductService",
+      "projectPath": "C:\\Users\\HARRY\\racetrac\\react_fnt_dotnet_bck\\backend\\ProductService\\ProductService.csproj",
+      "packagesPath": "C:\\Users\\HARRY\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\HARRY\\racetrac\\react_fnt_dotnet_bck\\backend\\ProductService\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\HARRY\\AppData\\Roaming\\NuGet\\NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net8.0"
+      ],
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "net8.0": {
+        "targetAlias": "net8.0",
+        "dependencies": {
+          "MongoDB.Driver": {
+            "target": "Package",
+            "version": "[2.22.0, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.AspNetCore.App": {
+            "privateAssets": "none"
+          },
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.415/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  },
+  "logs": [
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Unable to resolve 'MongoDB.Driver (>= 2.22.0)' for 'net8.0'.",
+      "libraryId": "MongoDB.Driver",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}

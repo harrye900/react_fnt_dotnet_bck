@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "3APoaVCSUP4=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\HARRY\\racetrac\\react_fnt_dotnet_bck\\backend\\ProductService\\ProductService.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Unable to resolve 'MongoDB.Driver (>= 2.22.0)' for 'net8.0'.",
+      "libraryId": "MongoDB.Driver",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}
